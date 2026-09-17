@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk // E-Voting Koperasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --glass-blur: blur(20px);
+        }
+
+        html.dark {
+            --glass-bg: rgba(10, 15, 25, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.8s ease;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 25%, #e8d5e0 50%, #c3dafe 75%, #d4e7fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0c1222 0%, #1a1040 25%, #0a1628 50%, #1e0a3c 75%, #0c1a2e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+            animation: orbFloat 25s ease-in-out infinite;
+        }
+
+        .light-mode .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(100, 160, 220, 0.4), transparent 70%);
+            top: -10%; left: -5%;
+        }
+        .light-mode .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(180, 140, 200, 0.35), transparent 70%);
+            top: 40%; right: -8%;
+            animation-delay: -8s;
+        }
+        .light-mode .orb-3 {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(120, 200, 180, 0.3), transparent 70%);
+            bottom: -5%; left: 30%;
+            animation-delay: -15s;
+        }
+
+        .dark-mode .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(80, 120, 220, 0.3), transparent 70%);
+            top: -10%; left: -5%;
+        }
+        .dark-mode .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(140, 60, 180, 0.25), transparent 70%);
+            top: 40%; right: -8%;
+            animation-delay: -8s;
+        }
+        .dark-mode .orb-3 {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(40, 180, 160, 0.2), transparent 70%);
+            bottom: -5%; left: 30%;
+            animation-delay: -15s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -20px) scale(1.05); }
+            50% { transform: translate(-20px, 30px) scale(0.95); }
+            75% { transform: translate(15px, 15px) scale(1.02); }
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .light-mode .glass {
+            border-top-color: rgba(255, 255, 255, 0.6);
+            border-left-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .dark-mode .glass {
+            border-top-color: rgba(255, 255, 255, 0.12);
+            border-left-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .glass:hover {
+            border-color: rgba(100, 180, 255, 0.3);
+        }
+
+        .header-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .header-glass {
+            background: rgba(10, 15, 25, 0.6);
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .light-mode .header-glass {
+            background: rgba(255, 255, 255, 0.3);
+            border-bottom-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            position: relative;
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 2px solid #34d399;
+            animation: pulseRing 2s ease-out infinite;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        .theme-toggle {
+            width: 56px;
+            height: 28px;
+            border-radius: 14px;
+            padding: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .light-mode .theme-toggle {
+            background: rgba(59, 130, 246, 0.25);
+        }
+
+        .dark-mode .theme-toggle {
+            background: rgba(99, 102, 241, 0.35);
+        }
+
+        .theme-toggle .knob {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .light-mode .theme-toggle .knob {
+            background: #fbbf24;
+            transform: translateX(0);
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+        }
+
+        .dark-mode .theme-toggle .knob {
+            background: #818cf8;
+            transform: translateX(28px);
+            box-shadow: 0 0 12px rgba(129, 140, 248, 0.5);
+        }
+
+        .light-mode .text-primary { color: #1e293b; }
+        .light-mode .text-secondary { color: #475569; }
+        .light-mode .text-muted { color: #64748b; }
+        .light-mode .text-accent { color: #2563eb; }
+
+        .dark-mode .text-primary { color: #f1f5f9; }
+        .dark-mode .text-secondary { color: #94a3b8; }
+        .dark-mode .text-muted { color: #64748b; }
+        .dark-mode .text-accent { color: #60a5fa; }
+
+        .rupture-btn {
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+            width: 100%;
+        }
+
+        .rupture-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .rupture-btn:active {
+            transform: scale(0.98);
+        }
+
+        .light-mode .rupture-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3);
+        }
+
+        .dark-mode .rupture-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-up:nth-child(1) { animation-delay: 0.05s; }
+        .fade-up:nth-child(2) { animation-delay: 0.1s; }
+        .fade-up:nth-child(3) { animation-delay: 0.15s; }
+
+        /* Custom Input styles */
+        .glass-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: inherit;
+            outline: none;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .light-mode .glass-input {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .light-mode .glass-input:focus {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .dark-mode .glass-input:focus {
+            background: rgba(10, 15, 25, 0.6);
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+        }
+    </style>
+</head>
+<body class="light-mode flex items-center justify-center min-h-screen">
+
+    <!-- Ambient orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- HEADER -->
+    <header class="header-glass fixed top-0 left-0 right-0 z-30 px-4 md:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="pulse-dot"></div>
+            <span class="text-primary font-semibold tracking-tight text-[15px]">E-Voting Koperasi</span>
+            <span class="status-badge glass text-accent px-2 py-0.5 text-xs rounded-full">v1.0</span>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="theme-toggle" id="themeToggle" role="button" tabindex="0" aria-label="Toggle theme">
+                <div class="knob">
+                    <svg class="w-3 h-3 sun-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                    </svg>
+                    <svg class="w-3 h-3 moon-icon" fill="currentColor" viewBox="0 0 20 20" style="display:none;">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN LOGIN CARD -->
+    <main class="w-full max-w-[440px] px-4 relative z-10 fade-up">
+        <div class="glass rounded-3xl p-8 md:p-10 flex flex-col space-y-6">
+            <div class="text-center space-y-2">
+                <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-primary">Selamat Datang</h1>
+                <p class="text-sm text-secondary">Sistem E-Voting Pemilihan Ketua Koperasi</p>
+            </div>
+
+            <form id="loginForm" class="space-y-5">
+                <div class="space-y-2">
+                    <label for="username" class="text-xs font-semibold uppercase tracking-wider text-secondary">Username / No. Anggota</label>
+                    <input type="text" id="username" class="glass-input text-primary" placeholder="Masukkan username" required autocomplete="username">
+                </div>
+
+                <div class="space-y-2">
+                    <label for="password" class="text-xs font-semibold uppercase tracking-wider text-secondary">Password</label>
+                    <input type="password" id="password" class="glass-input text-primary" placeholder="Masukkan password" required autocomplete="current-password">
+                </div>
+
+                <div id="errorMessage" class="text-red-500 text-xs font-medium hidden">
+                    Username atau password salah.
+                </div>
+
+                <button type="submit" class="rupture-btn">
+                    <span>Masuk Ke Sistem</span>
+                </button>
+            </form>
+
+            <div class="border-t border-white/10 pt-4 flex flex-col items-center justify-center space-y-2 text-[11px] text-muted font-mono">
+                <span>Default Admin: admin / admin123</span>
+                <span>Default Voter: voter1 / voter123</span>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ── Theme ──────────────────────────────────────────────
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = themeToggle.querySelector('.sun-icon');
+        const moonIcon = themeToggle.querySelector('.moon-icon');
+
+        function setDarkMode(on) {
+            if (on) {
+                body.classList.replace('light-mode', 'dark-mode');
+                document.documentElement.classList.add('dark');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.replace('dark-mode', 'light-mode');
+                document.documentElement.classList.remove('dark');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            setDarkMode(body.classList.contains('light-mode'));
+        });
+
+        // Initialize theme from localStorage
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setDarkMode(true);
+        } else {
+            setDarkMode(false);
+        }
+
+        // Initialize localStorage with dummy users and candidates if they don't exist
+        function initDatabase() {
+            if (!localStorage.getItem('users')) {
+                const initialUsers = [
+                    { id: 1, username: 'admin', fullName: 'Panitia Utama (Admin)', role: 'ADMIN', has_voted: false, voted_at: null, password_plain: 'admin123' },
+                    { id: 2, username: 'voter1', fullName: 'Budi Santoso, S.E.', role: 'VOTER', has_voted: false, voted_at: null, password_plain: 'voter123' },
+                    { id: 3, username: 'voter2', fullName: 'Siti Nurhaliza, S.H.', role: 'VOTER', has_voted: false, voted_at: null, password_plain: 'voter123' },
+                    { id: 4, username: 'voter3', fullName: 'Ahmad Fauzi, S.T.', role: 'VOTER', has_voted: false, voted_at: null, password_plain: 'voter123' },
+                    { id: 5, username: 'voter4', fullName: 'Dewi Lestari, M.M.', role: 'VOTER', has_voted: false, voted_at: null, password_plain: 'voter123' }
+                ];
+                localStorage.setItem('users', JSON.stringify(initialUsers));
+            }
+
+            if (!localStorage.getItem('candidates')) {
+                const initialCandidates = [
+                    { id: 1, candidate_number: 1, full_name: 'Ir. H. Joko Widodo, M.B.A.', vision: 'Koperasi modern berbasis teknologi digital and transparan.', mission: '1. digitalisasi sistem transaksi koperasi\n2. pelatihan bisnis berkala untuk anggota\n3. pembagian SHU yang transparan dan optimal.', photo_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face', vote_count: 0 },
+                    { id: 2, candidate_number: 2, full_name: 'Dr. Hj. Sri Mulyani, S.E.', vision: 'Koperasi tangguh, mandiri dan sejahtera bersama seluruh anggota.', mission: '1. optimalisasi aset menganggur\n2. perluasan kerja sama kemitraan strategis\n3. program dana talangan darurat tanpa bunga.', photo_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=400&h=400&fit=crop&crop=face', vote_count: 0 },
+                    { id: 3, candidate_number: 3, full_name: 'Prabowo Subianto, M.Si.', vision: 'Pilar ketahanan ekonomi anggota berazas kekeluargaan.', mission: '1. penyediaan sembako murah untuk anggota\n2. pendampingan sertifikasi usaha mikro gratis\n3. modernisasi unit simpan pinjam.', photo_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=400&fit=crop&crop=face', vote_count: 0 }
+                ];
+                localStorage.setItem('candidates', JSON.stringify(initialCandidates));
+            }
+
+            if (!localStorage.getItem('votes')) {
+                localStorage.setItem('votes', JSON.stringify([]));
+            }
+        }
+        initDatabase();
+
+        // Login Handler
+        const loginForm = document.getElementById('loginForm');
+        const errorMessage = document.getElementById('errorMessage');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const usernameInput = document.getElementById('username').value.trim();
+            const passwordInput = document.getElementById('password').value;
+
+            const usersList = JSON.parse(localStorage.getItem('users') || '[]');
+            const matchedUser = usersList.find(u => u.username === usernameInput && u.password_plain === passwordInput);
+
+            if (matchedUser) {
+                localStorage.setItem('currentUser', JSON.stringify(matchedUser));
+                
+                if (matchedUser.role === 'ADMIN') {
+                    window.location.href = 'admin-dashboard.html';
+                } else {
+                    window.location.href = 'voter-dashboard.html';
+                }
+            } else {
+                errorMessage.classList.remove('hidden');
+            }
+        });
+    </script>
+</body>
+</html>

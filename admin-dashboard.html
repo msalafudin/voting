@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard // E-Voting Koperasi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Consolas', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.12);
+            --glass-border: rgba(255, 255, 255, 0.18);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            --glass-blur: blur(20px);
+        }
+
+        html.dark {
+            --glass-bg: rgba(10, 15, 25, 0.45);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background 0.8s ease;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 25%, #e8d5e0 50%, #c3dafe 75%, #d4e7fe 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0c1222 0%, #1a1040 25%, #0a1628 50%, #1e0a3c 75%, #0c1a2e 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.5;
+            animation: orbFloat 25s ease-in-out infinite;
+        }
+
+        .light-mode .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(100, 160, 220, 0.4), transparent 70%);
+            top: -10%; left: -5%;
+        }
+        .light-mode .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(180, 140, 200, 0.35), transparent 70%);
+            top: 40%; right: -8%;
+            animation-delay: -8s;
+        }
+        .light-mode .orb-3 {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(120, 200, 180, 0.3), transparent 70%);
+            bottom: -5%; left: 30%;
+            animation-delay: -15s;
+        }
+
+        .dark-mode .orb-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(80, 120, 220, 0.3), transparent 70%);
+            top: -10%; left: -5%;
+        }
+        .dark-mode .orb-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(140, 60, 180, 0.25), transparent 70%);
+            top: 40%; right: -8%;
+            animation-delay: -8s;
+        }
+        .dark-mode .orb-3 {
+            width: 350px; height: 350px;
+            background: radial-gradient(circle, rgba(40, 180, 160, 0.2), transparent 70%);
+            bottom: -5%; left: 30%;
+            animation-delay: -15s;
+        }
+
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -20px) scale(1.05); }
+            50% { transform: translate(-20px, 30px) scale(0.95); }
+            75% { transform: translate(15px, 15px) scale(1.02); }
+        }
+
+        .glass {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            transition: all 0.3s ease;
+        }
+
+        .light-mode .glass {
+            border-top-color: rgba(255, 255, 255, 0.6);
+            border-left-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .dark-mode .glass {
+            border-top-color: rgba(255, 255, 255, 0.12);
+            border-left-color: rgba(255, 255, 255, 0.08);
+        }
+
+        .glass:hover {
+            border-color: rgba(100, 180, 255, 0.3);
+        }
+
+        .sidebar-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .sidebar-glass {
+            background: rgba(10, 15, 25, 0.6);
+            border-right-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .light-mode .sidebar-glass {
+            background: rgba(255, 255, 255, 0.25);
+            border-right-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .header-glass {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .dark-mode .header-glass {
+            background: rgba(10, 15, 25, 0.6);
+            border-bottom-color: rgba(255, 255, 255, 0.06);
+        }
+
+        .light-mode .header-glass {
+            background: rgba(255, 255, 255, 0.3);
+            border-bottom-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .light-mode .nav-item {
+            color: rgba(30, 40, 60, 0.7);
+        }
+        .dark-mode .nav-item {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .nav-item:hover {
+            background: rgba(100, 180, 255, 0.15);
+            color: #3b82f6;
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .dark-mode .nav-item.active {
+            color: #93c5fd;
+            background: rgba(59, 130, 246, 0.15);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #34d399;
+            position: relative;
+        }
+
+        .pulse-dot::after {
+            content: '';
+            position: absolute;
+            inset: -3px;
+            border-radius: 50%;
+            border: 2px solid #34d399;
+            animation: pulseRing 2s ease-out infinite;
+        }
+
+        @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.6; }
+            100% { transform: scale(2.2); opacity: 0; }
+        }
+
+        .theme-toggle {
+            width: 56px;
+            height: 28px;
+            border-radius: 14px;
+            padding: 3px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .light-mode .theme-toggle {
+            background: rgba(59, 130, 246, 0.25);
+        }
+
+        .dark-mode .theme-toggle {
+            background: rgba(99, 102, 241, 0.35);
+        }
+
+        .theme-toggle .knob {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .light-mode .theme-toggle .knob {
+            background: #fbbf24;
+            transform: translateX(0);
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+        }
+
+        .dark-mode .theme-toggle .knob {
+            background: #818cf8;
+            transform: translateX(28px);
+            box-shadow: 0 0 12px rgba(129, 140, 248, 0.5);
+        }
+
+        .light-mode .text-primary { color: #1e293b; }
+        .light-mode .text-secondary { color: #475569; }
+        .light-mode .text-muted { color: #64748b; }
+        .light-mode .text-accent { color: #2563eb; }
+
+        .dark-mode .text-primary { color: #f1f5f9; }
+        .dark-mode .text-secondary { color: #94a3b8; }
+        .dark-mode .text-muted { color: #64748b; }
+        .dark-mode .text-accent { color: #60a5fa; }
+
+        .metric-card {
+            border-radius: 16px;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .metric-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .dark-mode .metric-card::before {
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.08), transparent);
+        }
+
+        .bar-track {
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .light-mode .bar-track {
+            background: rgba(0, 0, 0, 0.08);
+        }
+
+        .dark-mode .bar-track {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .bar-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .sidebar-slide {
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.35s ease;
+        }
+
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(4px);
+            z-index: 20;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+        /* Custom style inputs */
+        .glass-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 10px 14px;
+            color: inherit;
+            outline: none;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .light-mode .glass-input {
+            background: rgba(255, 255, 255, 0.4);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .light-mode .glass-input:focus {
+            background: rgba(255, 255, 255, 0.7);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+
+        .dark-mode .glass-input:focus {
+            background: rgba(10, 15, 25, 0.6);
+            border-color: #60a5fa;
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
+        }
+
+        /* Glass buttons */
+        .rupture-btn {
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: none;
+        }
+
+        .rupture-btn:hover {
+            transform: scale(1.02);
+        }
+
+        .rupture-btn:active {
+            transform: scale(0.98);
+        }
+
+        .light-mode .rupture-btn {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+        }
+
+        .dark-mode .rupture-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+        }
+
+        .fade-up {
+            opacity: 0;
+            transform: translateY(16px);
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        @keyframes fadeUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-up:nth-child(1) { animation-delay: 0.05s; }
+        .fade-up:nth-child(2) { animation-delay: 0.1s; }
+        .fade-up:nth-child(3) { animation-delay: 0.15s; }
+    </style>
+</head>
+<body class="light-mode">
+
+    <!-- Ambient orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Overlay for mobile sidebar & modal -->
+    <div class="overlay" id="overlay"></div>
+
+    <!-- HEADER -->
+    <header class="header-glass fixed top-0 left-0 right-0 z-30 px-4 md:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-4">
+            <button id="menuBtn" class="p-2 rounded-xl hover:bg-white/10 transition-colors md:hidden" aria-label="Toggle menu">
+                <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                </svg>
+            </button>
+            <div class="flex items-center gap-3">
+                <div class="pulse-dot"></div>
+                <span class="text-primary font-bold tracking-tight text-[15px]">E-Voting Koperasi</span>
+                <span class="hidden sm:inline-flex status-badge glass text-accent px-2 py-0.5 text-xs rounded-full">PANITIA</span>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="theme-toggle" id="themeToggle" role="button" tabindex="0" aria-label="Toggle theme">
+                <div class="knob">
+                    <svg class="w-3 h-3 sun-icon" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+                    </svg>
+                    <svg class="w-3 h-3 moon-icon" fill="currentColor" viewBox="0 0 20 20" style="display:none;">
+                        <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/>
+                    </svg>
+                </div>
+            </div>
+            <button id="logoutBtn" class="p-2 rounded-xl hover:bg-white/10 transition-colors text-primary" aria-label="Log out">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <div class="flex h-screen pt-16 relative z-10">
+
+        <!-- SIDEBAR -->
+        <aside id="sidebar" class="sidebar-glass sidebar-slide fixed md:sticky top-16 left-0 bottom-0 w-64 z-20 flex flex-col -translate-x-full md:translate-x-0">
+            <div class="p-5 flex-1 overflow-y-auto space-y-6">
+                <div>
+                    <p class="text-xs font-semibold text-muted mb-3 uppercase tracking-wide">Menu Admin</p>
+                    <nav class="space-y-1">
+                        <button class="nav-item active w-full" id="menuStatsBtn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            <span>Hasil & Ranking</span>
+                        </button>
+                        <button class="nav-item w-full" id="menuUsersBtn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                            <span>Kelola Anggota</span>
+                        </button>
+                        <button class="nav-item w-full" id="menuCandidatesBtn">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                            <span>Kelola Kandidat</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-white/10">
+                <div class="glass rounded-xl p-3 space-y-2 font-mono text-[11px] text-muted">
+                    <div class="flex justify-between">
+                        <span>Database:</span>
+                        <span class="text-emerald-500">Connected</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Security:</span>
+                        <span class="text-accent">Active (ACID)</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTAINER -->
+        <main class="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 space-y-6">
+
+            <!-- 1. STATS SECTION (Hasil & Ranking) -->
+            <section id="sectionStats" class="space-y-6">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3 fade-up">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-primary">Hasil Real-Time & Ranking</h1>
+                        <p class="text-sm text-secondary mt-1">Laporan grafik perolehan suara pemilihan ketua koperasi secara berkala.</p>
+                    </div>
+                    <button id="resetAllVotesBtn" class="rupture-btn bg-red-600/20 hover:bg-red-600/30 text-red-500 border border-red-500/20 px-4 py-2 rounded-xl text-xs font-semibold">
+                        Reset Seluruh Suara
+                    </button>
+                </div>
+
+                <!-- METRICS GRID -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 fade-up">
+                    <div class="glass metric-card">
+                        <span class="text-xs font-medium text-muted">Total DPT Anggota</span>
+                        <p class="text-2xl md:text-3xl font-bold text-primary font-mono mt-2" id="metricTotalVoters">0</p>
+                    </div>
+                    <div class="glass metric-card">
+                        <span class="text-xs font-medium text-muted">Sudah Memilih</span>
+                        <p class="text-2xl md:text-3xl font-bold text-emerald-500 font-mono mt-2" id="metricVoted">0</p>
+                    </div>
+                    <div class="glass metric-card">
+                        <span class="text-xs font-medium text-muted">Belum Memilih</span>
+                        <p class="text-2xl md:text-3xl font-bold text-amber-500 font-mono mt-2" id="metricNotVoted">0</p>
+                    </div>
+                    <div class="glass metric-card">
+                        <span class="text-xs font-medium text-muted">Partisipasi</span>
+                        <p class="text-2xl md:text-3xl font-bold text-accent font-mono mt-2" id="metricParticipation">0%</p>
+                    </div>
+                </div>
+
+                <!-- CHART & RANKING TABLE -->
+                <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 fade-up">
+                    <div class="glass rounded-2xl p-5 lg:col-span-3 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-base font-semibold text-primary">Grafik Perolehan Suara</h2>
+                            <p class="text-xs text-muted mt-0.5">Persentase suara dari seluruh pemilih yang telah masuk.</p>
+                        </div>
+                        <div class="relative w-full h-64 mt-4 bg-black/5 rounded-xl p-4">
+                            <canvas id="voteChart" class="w-full h-full"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="glass rounded-2xl p-5 lg:col-span-2 flex flex-col justify-between">
+                        <div>
+                            <h2 class="text-base font-semibold text-primary">Ranking Perolehan Suara</h2>
+                            <p class="text-xs text-muted mt-0.5">Diurutkan secara otomatis berdasarkan perolehan suara terbanyak.</p>
+                        </div>
+                        <div class="overflow-x-auto mt-4 flex-1">
+                            <table class="w-full text-left border-collapse text-xs">
+                                <thead>
+                                    <tr class="border-b border-white/10 text-muted">
+                                        <th class="py-2.5">Urutan</th>
+                                        <th class="py-2.5">No. Urut</th>
+                                        <th class="py-2.5">Nama Kandidat</th>
+                                        <th class="py-2.5 text-right">Suara</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rankingTableBody" class="divide-y divide-white/5 text-primary">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. USERS MANAGEMENT SECTION -->
+            <section id="sectionUsers" class="space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-primary">Manajemen Anggota</h1>
+                        <p class="text-sm text-secondary mt-1">Kelola data anggota terdaftar beserta status hak suara.</p>
+                    </div>
+                    <button id="addUserBtn" class="rupture-btn">
+                        <span>Tambah Anggota Baru</span>
+                    </button>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-black/10 border-b border-white/10 text-muted uppercase tracking-wider font-semibold">
+                                    <th class="p-4">Username / ID</th>
+                                    <th class="p-4">Nama Lengkap</th>
+                                    <th class="p-4">Role</th>
+                                    <th class="p-4">Status Suara</th>
+                                    <th class="p-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody" class="divide-y divide-white/5 text-primary">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. CANDIDATES MANAGEMENT SECTION -->
+            <section id="sectionCandidates" class="space-y-6 hidden">
+                <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+                    <div>
+                        <h1 class="text-2xl md:text-3xl font-bold tracking-tight text-primary">Manajemen Kandidat</h1>
+                        <p class="text-sm text-secondary mt-1">Kelola data profil, visi, misi dan foto kandidat ketua.</p>
+                    </div>
+                    <button id="addCandidateBtn" class="rupture-btn">
+                        <span>Tambah Kandidat Baru</span>
+                    </button>
+                </div>
+
+                <div class="glass rounded-2xl overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse text-xs">
+                            <thead>
+                                <tr class="bg-black/10 border-b border-white/10 text-muted uppercase tracking-wider font-semibold">
+                                    <th class="p-4">No. Urut</th>
+                                    <th class="p-4">Foto</th>
+                                    <th class="p-4">Nama Lengkap</th>
+                                    <th class="p-4">Visi Utama</th>
+                                    <th class="p-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="candidatesTableBody" class="divide-y divide-white/5 text-primary">
+                                <!-- Dynamic -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL POPUP USER (CRUD) -->
+    <div id="userModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass w-full max-w-md rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative text-primary">
+            <h3 id="userModalTitle" class="text-lg font-bold">Tambah Anggota</h3>
+            <form id="userForm" class="space-y-4">
+                <input type="hidden" id="editUserId">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Username / ID Anggota</label>
+                    <input type="text" id="inputUsername" class="glass-input" required placeholder="Contoh: voter5">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Nama Lengkap</label>
+                    <input type="text" id="inputFullName" class="glass-input" required placeholder="Contoh: Joko Susilo, M.Si.">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Password Baru (Plain)</label>
+                    <input type="password" id="inputPassword" class="glass-input" placeholder="Masukkan password baru">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Role Hak Akses</label>
+                    <select id="inputRole" class="glass-input">
+                        <option value="VOTER">VOTER (Anggota Koperasi)</option>
+                        <option value="ADMIN">ADMIN (Panitia Utama)</option>
+                    </select>
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="closeUserModalBtn" class="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs border border-white/10 hover:bg-white/5">Batal</button>
+                    <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs bg-blue-600 text-white hover:bg-blue-700">Simpan Anggota</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL POPUP CANDIDATE (CRUD) -->
+    <div id="candidateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 opacity-0 pointer-events-none transition-all duration-300">
+        <div class="glass w-full max-w-md rounded-3xl p-6 md:p-8 space-y-5 shadow-2xl relative text-primary">
+            <h3 id="candidateModalTitle" class="text-lg font-bold">Tambah Kandidat</h3>
+            <form id="candidateForm" class="space-y-4">
+                <input type="hidden" id="editCandidateId">
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Nomor Urut</label>
+                    <input type="number" id="inputCandidateNumber" class="glass-input" required placeholder="Contoh: 4">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Nama Lengkap Kandidat</label>
+                    <input type="text" id="inputCandidateName" class="glass-input" required placeholder="Contoh: Prof. Dr. Bacharuddin Jusuf Habibie">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Visi Utama</label>
+                    <input type="text" id="inputCandidateVision" class="glass-input" required placeholder="Masukkan visi ringkas">
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Misi (Pisahkan dengan baris baru)</label>
+                    <textarea id="inputCandidateMission" rows="3" class="glass-input" required placeholder="Masukkan misi kandidat..."></textarea>
+                </div>
+                <div class="space-y-1">
+                    <label class="text-[11px] font-bold uppercase tracking-wide text-secondary">Foto URL</label>
+                    <input type="url" id="inputCandidatePhotoUrl" class="glass-input" placeholder="https://images.unsplash.com/...">
+                </div>
+                <div class="flex gap-3 pt-2">
+                    <button type="button" id="closeCandidateModalBtn" class="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs border border-white/10 hover:bg-white/5">Batal</button>
+                    <button type="submit" class="flex-1 py-2.5 px-4 rounded-xl font-semibold text-xs bg-blue-600 text-white hover:bg-blue-700">Simpan Kandidat</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Check session
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            window.location.href = 'login.html';
+        }
+
+        // Theme management
+        const body = document.body;
+        const themeToggle = document.getElementById('themeToggle');
+        const sunIcon = themeToggle.querySelector('.sun-icon');
+        const moonIcon = themeToggle.querySelector('.moon-icon');
+
+        function setDarkMode(on) {
+            if (on) {
+                body.classList.replace('light-mode', 'dark-mode');
+                document.documentElement.classList.add('dark');
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                body.classList.replace('dark-mode', 'light-mode');
+                document.documentElement.classList.remove('dark');
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        themeToggle.addEventListener('click', () => {
+            setDarkMode(body.classList.contains('light-mode'));
+            if (myChart) {
+                // Update chart fonts colors based on light/dark mode
+                updateChartStyles();
+            }
+        });
+
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            setDarkMode(true);
+        } else {
+            setDarkMode(false);
+        }
+
+        // Sidebar logic
+        const sidebar = document.getElementById('sidebar');
+        const menuBtn = document.getElementById('menuBtn');
+        const overlay = document.getElementById('overlay');
+
+        function openSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.add('visible');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.remove('visible');
+        }
+
+        menuBtn.addEventListener('click', () => {
+            sidebar.classList.contains('-translate-x-full') ? openSidebar() : closeSidebar();
+        });
+
+        overlay.addEventListener('click', () => {
+            closeSidebar();
+            closeUserModal();
+            closeCandidateModal();
+        });
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'login.html';
+        });
+
+        // Dynamic section switching
+        const menuStatsBtn = document.getElementById('menuStatsBtn');
+        const menuUsersBtn = document.getElementById('menuUsersBtn');
+        const menuCandidatesBtn = document.getElementById('menuCandidatesBtn');
+
+        const sectionStats = document.getElementById('sectionStats');
+        const sectionUsers = document.getElementById('sectionUsers');
+        const sectionCandidates = document.getElementById('sectionCandidates');
+
+        function switchSection(activeBtn, activeSection) {
+            [menuStatsBtn, menuUsersBtn, menuCandidatesBtn].forEach(btn => btn.classList.remove('active'));
+            [sectionStats, sectionUsers, sectionCandidates].forEach(sec => sec.classList.add('hidden'));
+
+            activeBtn.classList.add('active');
+            activeSection.classList.remove('hidden');
+            if (window.innerWidth < 768) closeSidebar();
+        }
+
+        menuStatsBtn.addEventListener('click', () => switchSection(menuStatsBtn, sectionStats));
+        menuUsersBtn.addEventListener('click', () => switchSection(menuUsersBtn, sectionUsers));
+        menuCandidatesBtn.addEventListener('click', () => switchSection(menuCandidatesBtn, sectionCandidates));
+
+        // ── DATABASE OPERATIONS (CRUD) ─────────────────────────
+        let users = [];
+        let candidates = [];
+        let votes = [];
+
+        function loadDatabase() {
+            users = JSON.parse(localStorage.getItem('users') || '[]');
+            candidates = JSON.parse(localStorage.getItem('candidates') || '[]');
+            votes = JSON.parse(localStorage.getItem('votes') || '[]');
+        }
+
+        function saveDatabase() {
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('candidates', JSON.stringify(candidates));
+            localStorage.setItem('votes', JSON.stringify(votes));
+            refreshUI();
+        }
+
+        // Stats Rendering
+        let myChart = null;
+
+        function renderStats() {
+            const totalVoters = users.filter(u => u.role === 'VOTER').length;
+            const voted = users.filter(u => u.role === 'VOTER' && u.has_voted).length;
+            const notVoted = totalVoters - voted;
+            const participationRate = totalVoters > 0 ? ((voted / totalVoters) * 100).toFixed(1) : 0;
+
+            document.getElementById('metricTotalVoters').textContent = totalVoters;
+            document.getElementById('metricVoted').textContent = voted;
+            document.getElementById('metricNotVoted').textContent = notVoted;
+            document.getElementById('metricParticipation').textContent = `${participationRate}%`;
+
+            // Render Ranking Table
+            const sortedCandidates = [...candidates].sort((a, b) => b.vote_count - a.vote_count);
+            const rankingTableBody = document.getElementById('rankingTableBody');
+            rankingTableBody.innerHTML = '';
+
+            sortedCandidates.forEach((cand, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="py-2.5 font-bold">${index + 1}</td>
+                    <td class="py-2.5"><span class="px-2 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded font-bold">${cand.candidate_number}</span></td>
+                    <td class="py-2.5 font-semibold text-primary">${cand.full_name}</td>
+                    <td class="py-2.5 text-right font-mono font-bold text-accent">${cand.vote_count}</td>
+                `;
+                rankingTableBody.appendChild(tr);
+            });
+
+            // Update Chart
+            renderChartInstance();
+        }
+
+        function updateChartStyles() {
+            if (!myChart) return;
+            const isDark = body.classList.contains('dark-mode');
+            const colorPrimary = isDark ? '#f1f5f9' : '#1e293b';
+            const colorMuted = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
+
+            myChart.options.scales.x.grid.color = colorMuted;
+            myChart.options.scales.y.grid.color = colorMuted;
+            myChart.options.scales.x.ticks.color = colorPrimary;
+            myChart.options.scales.y.ticks.color = colorPrimary;
+            myChart.options.plugins.legend.labels.color = colorPrimary;
+            myChart.update();
+        }
+
+        function renderChartInstance() {
+            const ctx = document.getElementById('voteChart').getContext('2d');
+            const labelNames = candidates.map(c => `No. ${c.candidate_number} - ${c.full_name.split(',')[0]}`);
+            const dataCounts = candidates.map(c => c.vote_count);
+
+            if (myChart) {
+                myChart.data.labels = labelNames;
+                myChart.data.datasets[0].data = dataCounts;
+                myChart.update();
+                updateChartStyles();
+            } else {
+                myChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labelNames,
+                        datasets: [{
+                            label: 'Jumlah Suara Terkumpul',
+                            data: dataCounts,
+                            backgroundColor: 'rgba(59, 130, 246, 0.45)',
+                            borderColor: '#3b82f6',
+                            borderWidth: 1.5,
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                },
+                                grid: {
+                                    drawTicks: false
+                                }
+                            },
+                            x: {
+                                grid: {
+                                    display: false
+                                }
+                            }
+                        }
+                    }
+                });
+                updateChartStyles();
+            }
+        }
+
+        // Users rendering
+        const usersTableBody = document.getElementById('usersTableBody');
+
+        function renderUsersTable() {
+            usersTableBody.innerHTML = '';
+            users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-mono font-semibold text-primary">${u.username}</td>
+                    <td class="p-4 font-semibold text-primary">${u.fullName}</td>
+                    <td class="p-4"><span class="px-2 py-0.5 text-[10px] font-bold rounded-full border ${u.role === 'ADMIN' ? 'border-amber-500/30 bg-amber-500/10 text-amber-500' : 'border-blue-500/30 bg-blue-500/10 text-blue-500'}">${u.role}</span></td>
+                    <td class="p-4">
+                        ${u.role === 'ADMIN' ? '-' : (u.has_voted ? 
+                            `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">Sudah Memilih</span>` : 
+                            `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/10 text-amber-500 border border-amber-500/20">Belum Memilih</span>`
+                        )}
+                    </td>
+                    <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+                        ${u.role === 'VOTER' && u.has_voted ? `<button onclick="resetUserVote(${u.id})" class="px-3 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 border border-amber-500/20 rounded-lg text-[10px] font-bold">Reset Status Vote</button>` : ''}
+                        <button onclick="openEditUserModal(${u.id})" class="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/20 rounded-lg text-[10px] font-bold">Edit</button>
+                        <button onclick="deleteUser(${u.id})" class="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-[10px] font-bold">Hapus</button>
+                    </td>
+                `;
+                usersTableBody.appendChild(tr);
+            });
+        }
+
+        // Candidates rendering
+        const candidatesTableBody = document.getElementById('candidatesTableBody');
+
+        function renderCandidatesTable() {
+            candidatesTableBody.innerHTML = '';
+            candidates.sort((a, b) => a.candidate_number - b.candidate_number);
+
+            candidates.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-4 font-bold text-primary text-sm">${c.candidate_number}</td>
+                    <td class="p-4"><img src="${c.photo_url || 'https://via.placeholder.com/100'}" class="w-10 h-10 rounded-full object-cover border border-white/20"></td>
+                    <td class="p-4 font-semibold text-primary text-sm">${c.full_name}</td>
+                    <td class="p-4 text-secondary max-w-xs truncate">${c.vision}</td>
+                    <td class="p-4 text-right space-x-1.5 whitespace-nowrap">
+                        <button onclick="openEditCandidateModal(${c.id})" class="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 text-blue-500 border border-blue-500/20 rounded-lg text-[10px] font-bold">Edit</button>
+                        <button onclick="deleteCandidate(${c.id})" class="px-3 py-1 bg-red-500/10 hover:bg-red-500/20 text-red-500 border border-red-500/20 rounded-lg text-[10px] font-bold">Hapus</button>
+                    </td>
+                `;
+                candidatesTableBody.appendChild(tr);
+            });
+        }
+
+        function refreshUI() {
+            loadDatabase();
+            renderStats();
+            renderUsersTable();
+            renderCandidatesTable();
+        }
+
+        // Reset All Votes
+        document.getElementById('resetAllVotesBtn').addEventListener('click', () => {
+            if (confirm('PERINGATAN: Apakah Anda yakin ingin me-reset seluruh perolehan suara? Aksi ini akan menghapus log pemilihan dan mengembalikan status voters menjadi belum memilih.')) {
+                users.forEach(u => {
+                    u.has_voted = false;
+                    u.voted_at = null;
+                });
+                candidates.forEach(c => {
+                    c.vote_count = 0;
+                });
+                votes = [];
+                saveDatabase();
+                alert('Seluruh database perolehan suara berhasil di-reset.');
+            }
+        });
+
+        // Reset individual vote
+        function resetUserVote(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user && user.has_voted) {
+                if (confirm(`Reset status hak pilih untuk ${user.fullName}?`)) {
+                    // Find his recorded vote to decrement candidate
+                    const voteIndex = votes.findIndex(v => v.user_id === userId);
+                    if (voteIndex !== -1) {
+                        const candidateId = votes[voteIndex].candidate_id;
+                        const candidate = candidates.find(c => c.id === candidateId);
+                        if (candidate && candidate.vote_count > 0) {
+                            candidate.vote_count -= 1;
+                        }
+                        votes.splice(voteIndex, 1);
+                    }
+                    user.has_voted = false;
+                    user.voted_at = null;
+                    saveDatabase();
+                    alert(`Status hak pilih ${user.fullName} berhasil di-reset.`);
+                }
+            }
+        }
+
+        // Delete User
+        function deleteUser(userId) {
+            if (userId === currentUser.id) {
+                alert('Anda tidak dapat menghapus akun Anda sendiri yang sedang aktif.');
+                return;
+            }
+            const user = users.find(u => u.id === userId);
+            if (user && confirm(`Hapus anggota ${user.fullName}?`)) {
+                // Remove recorded vote if has_voted is true
+                if (user.has_voted) {
+                    const voteIndex = votes.findIndex(v => v.user_id === userId);
+                    if (voteIndex !== -1) {
+                        const candidateId = votes[voteIndex].candidate_id;
+                        const candidate = candidates.find(c => c.id === candidateId);
+                        if (candidate && candidate.vote_count > 0) {
+                            candidate.vote_count -= 1;
+                        }
+                        votes.splice(voteIndex, 1);
+                    }
+                }
+                users = users.filter(u => u.id !== userId);
+                saveDatabase();
+                alert('Anggota berhasil dihapus.');
+            }
+        }
+
+        // Delete Candidate
+        function deleteCandidate(candId) {
+            const candidate = candidates.find(c => c.id === candId);
+            if (candidate && confirm(`Hapus kandidat ${candidate.full_name}? Aksi ini akan menghilangkan suara kandidat tersebut.`)) {
+                // Also clean users who voted for this candidate, setting their status back or keeping it as golput?
+                // The PRD indicates keeping consistent database.
+                // To maintain logical integrity, voters who voted for him will be set back to has_voted = false
+                const votesForHim = votes.filter(v => v.candidate_id === candId);
+                votesForHim.forEach(v => {
+                    const voter = users.find(u => u.id === v.user_id);
+                    if (voter) {
+                        voter.has_voted = false;
+                        voter.voted_at = null;
+                    }
+                });
+                votes = votes.filter(v => v.candidate_id !== candId);
+                candidates = candidates.filter(c => c.id !== candId);
+                saveDatabase();
+                alert('Kandidat berhasil dihapus.');
+            }
+        }
+
+        // ── USER MODAL MANAGEMENT ──────────────────────────────
+        const userModal = document.getElementById('userModal');
+        const userForm = document.getElementById('userForm');
+        const userModalTitle = document.getElementById('userModalTitle');
+        const editUserId = document.getElementById('editUserId');
+        const inputUsername = document.getElementById('inputUsername');
+        const inputFullName = document.getElementById('inputFullName');
+        const inputPassword = document.getElementById('inputPassword');
+        const inputRole = document.getElementById('inputRole');
+        const closeUserModalBtn = document.getElementById('closeUserModalBtn');
+
+        function openAddUserModal() {
+            userModalTitle.textContent = 'Tambah Anggota';
+            editUserId.value = '';
+            userForm.reset();
+            inputPassword.required = true;
+            userModal.classList.add('opacity-100', 'pointer-events-auto');
+            overlay.classList.add('visible');
+        }
+
+        function openEditUserModal(userId) {
+            const user = users.find(u => u.id === userId);
+            if (user) {
+                userModalTitle.textContent = 'Edit Anggota';
+                editUserId.value = user.id;
+                inputUsername.value = user.username;
+                inputFullName.value = user.fullName;
+                inputPassword.value = '';
+                inputPassword.required = false; // Optional password during edit
+                inputRole.value = user.role;
+
+                userModal.classList.add('opacity-100', 'pointer-events-auto');
+                overlay.classList.add('visible');
+            }
+        }
+
+        function closeUserModal() {
+            userModal.classList.remove('opacity-100', 'pointer-events-auto');
+            overlay.classList.remove('visible');
+        }
+
+        document.getElementById('addUserBtn').addEventListener('click', openAddUserModal);
+        closeUserModalBtn.addEventListener('click', closeUserModal);
+
+        userForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const uId = editUserId.value;
+            const usernameVal = inputUsername.value.trim();
+            const fullNameVal = inputFullName.value.trim();
+            const passwordVal = inputPassword.value;
+            const roleVal = inputRole.value;
+
+            // Validation duplicate username
+            const isDuplicate = users.some(u => u.username === usernameVal && u.id !== parseInt(uId));
+            if (isDuplicate) {
+                alert('Username ini telah terdaftar!');
+                return;
+            }
+
+            if (uId) {
+                // EDIT MODE
+                const userIndex = users.findIndex(u => u.id === parseInt(uId));
+                if (userIndex !== -1) {
+                    users[userIndex].username = usernameVal;
+                    users[userIndex].fullName = fullNameVal;
+                    users[userIndex].role = roleVal;
+                    if (passwordVal) {
+                        users[userIndex].password_plain = passwordVal;
+                    }
+                }
+            } else {
+                // ADD MODE
+                const newId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+                users.push({
+                    id: newId,
+                    username: usernameVal,
+                    fullName: fullNameVal,
+                    role: roleVal,
+                    has_voted: false,
+                    voted_at: null,
+                    password_plain: passwordVal
+                });
+            }
+
+            saveDatabase();
+            closeUserModal();
+            alert('Data anggota berhasil disimpan.');
+        });
+
+        // ── CANDIDATE MODAL MANAGEMENT ──────────────────────────
+        const candidateModal = document.getElementById('candidateModal');
+        const candidateForm = document.getElementById('candidateForm');
+        const candidateModalTitle = document.getElementById('candidateModalTitle');
+        const editCandidateId = document.getElementById('editCandidateId');
+        const inputCandidateNumber = document.getElementById('inputCandidateNumber');
+        const inputCandidateName = document.getElementById('inputCandidateName');
+        const inputCandidateVision = document.getElementById('inputCandidateVision');
+        const inputCandidateMission = document.getElementById('inputCandidateMission');
+        const inputCandidatePhotoUrl = document.getElementById('inputCandidatePhotoUrl');
+        const closeCandidateModalBtn = document.getElementById('closeCandidateModalBtn');
+
+        function openAddCandidateModal() {
+            candidateModalTitle.textContent = 'Tambah Kandidat';
+            editCandidateId.value = '';
+            candidateForm.reset();
+            candidateModal.classList.add('opacity-100', 'pointer-events-auto');
+            overlay.classList.add('visible');
+        }
+
+        function openEditCandidateModal(candId) {
+            const cand = candidates.find(c => c.id === candId);
+            if (cand) {
+                candidateModalTitle.textContent = 'Edit Profil Kandidat';
+                editCandidateId.value = cand.id;
+                inputCandidateNumber.value = cand.candidate_number;
+                inputCandidateName.value = cand.full_name;
+                inputCandidateVision.value = cand.vision;
+                inputCandidateMission.value = cand.mission;
+                inputCandidatePhotoUrl.value = cand.photo_url || '';
+
+                candidateModal.classList.add('opacity-100', 'pointer-events-auto');
+                overlay.classList.add('visible');
+            }
+        }
+
+        function closeCandidateModal() {
+            candidateModal.classList.remove('opacity-100', 'pointer-events-auto');
+            overlay.classList.remove('visible');
+        }
+
+        document.getElementById('addCandidateBtn').addEventListener('click', openAddCandidateModal);
+        closeCandidateModalBtn.addEventListener('click', closeCandidateModal);
+
+        candidateForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const cId = editCandidateId.value;
+            const candNumVal = parseInt(inputCandidateNumber.value);
+            const candNameVal = inputCandidateName.value.trim();
+            const candVisionVal = inputCandidateVision.value.trim();
+            const candMissionVal = inputCandidateMission.value.trim();
+            const candPhotoVal = inputCandidatePhotoUrl.value.trim();
+
+            // Validate duplicate candidate number
+            const isDuplicate = candidates.some(c => c.candidate_number === candNumVal && c.id !== parseInt(cId));
+            if (isDuplicate) {
+                alert('Nomor urut ini telah digunakan oleh kandidat lain!');
+                return;
+            }
+
+            if (cId) {
+                // EDIT MODE
+                const candIndex = candidates.findIndex(c => c.id === parseInt(cId));
+                if (candIndex !== -1) {
+                    candidates[candIndex].candidate_number = candNumVal;
+                    candidates[candIndex].full_name = candNameVal;
+                    candidates[candIndex].vision = candVisionVal;
+                    candidates[candIndex].mission = candMissionVal;
+                    candidates[candIndex].photo_url = candPhotoVal;
+                }
+            } else {
+                // ADD MODE
+                const newId = candidates.length > 0 ? Math.max(...candidates.map(c => c.id)) + 1 : 1;
+                candidates.push({
+                    id: newId,
+                    candidate_number: candNumVal,
+                    full_name: candNameVal,
+                    vision: candVisionVal,
+                    mission: candMissionVal,
+                    photo_url: candPhotoVal,
+                    vote_count: 0
+                });
+            }
+
+            saveDatabase();
+            closeCandidateModal();
+            alert('Data kandidat berhasil disimpan.');
+        });
+
+        // ── INIT ON LOAD ───────────────────────────────────────
+        refreshUI();
+    </script>
+</body>
+</html>
